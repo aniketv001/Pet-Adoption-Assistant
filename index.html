@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Adoption Assistant</title>
+    <style>
+        :root {
+            --primary-color: #4A7FB7;
+            --secondary-color: #F5B971;
+            --background-color: #F9F9F9;
+            --chat-bg: #FFFFFF;
+            --user-message-bg: #E6F3FF;
+            --assistant-message-bg: #F2F2F2;
+            --text-color: #333333;
+            --light-text: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .paw-icon {
+            font-size: 24px;
+            margin: 0 5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            height: calc(100vh - 180px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .suggestion {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        .suggestion:hover {
+            background-color: #3A6FA7;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            background-color: var(--chat-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: var(--user-message-bg);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .assistant-message {
+            background-color: var(--assistant-message-bg);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--light-text);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: var(--assistant-message-bg);
+            padding: 12px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: var(--primary-color);
+            display: inline-block;
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+            margin: 0 2px;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.1; }
+            20% { opacity: 1; }
+            100% { opacity: 0.1; }
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .message-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            resize: none;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: #3A6FA7;
+        }
+
+        .send-btn i {
+            font-size: 20px;
+        }
+
+        .pet-info {
+            margin-top: auto;
+        }
+
+        .pet-info img {
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .welcome-message {
+            text-align: center;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+
+        .welcome-message h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .welcome-message p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* For smaller screens */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1><span class="paw-icon">🐾</span> Pet Adoption Assistant <span class="paw-icon">🐾</span></h1>
+        <p>Your guide to finding the perfect pet companion</p>
+    </div>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="sidebar">
+                <h3>Ask About</h3>
+                <div class="suggestion">What dog breeds are good for families?</div>
+                <div class="suggestion">Tell me about Bengal cats</div>
+                <div class="suggestion">Pros and cons of bearded dragons</div>
+                <div class="suggestion">Species of rabbits</div>
+                <div class="suggestion">Small pets for apartments</div>
+                <div class="suggestion">Low-maintenance pets</div>
+                
+                <div class="pet-info">
+                    <h3>Pet of the Day</h3>
+                    <img src="/api/placeholder/200/150" alt="Featured Pet">
+                </div>
+            </div>
+            
+            <div class="chat-box">
+                <div class="messages" id="messages">
+                    <div class="welcome-message">
+                        <h2>Welcome to the Pet Adoption Assistant!</h2>
+                        <p>I can help you learn about different animals and their species.</p>
+                        <p>Ask me questions about pet breeds, care requirements, or adoption considerations.</p>
+                        <p>Let's find the perfect pet companion for you!</p>
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                
+                <div class="input-area">
+                    <textarea class="message-input" id="message-input" placeholder="Type your message here..." rows="1"></textarea>
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to fully load
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-btn');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const suggestions = document.querySelectorAll('.suggestion');
+            
+            // Sample responses (in a real application, these would come from your Python backend)
+            const sampleResponses = {
+                "dog": "There are many dog breeds suitable for different lifestyles. Some popular family dogs include Labrador Retrievers, Golden Retrievers, Beagles, and Collies. These breeds are known for their friendly temperament and patience with children.",
+                "cat": "Cats make wonderful companions! Popular breeds include Maine Coon, Siamese, Persian, Bengal, and Ragdoll. Each has unique characteristics - Siamese are vocal and social, while Persian cats are calm and require regular grooming.",
+                "rabbit": "Rabbits come in various breeds like Netherland Dwarf, Holland Lop, and Rex. They're social animals that need regular interaction and proper housing. They can live 8-12 years with proper care.",
+                "bearded": "Bearded dragons are friendly reptiles that make great pets. They require a proper terrarium with heat lamps, UVB lighting, and specific dietary needs. They're relatively low-maintenance once set up correctly.",
+                "default": "I'd be happy to help you learn more about pet adoption! Please ask me about specific animals or breeds you're interested in."
+            };
+            
+            // Auto-resize textarea as user types
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.scrollHeight > 120) {
+                    this.style.overflowY = 'scroll';
+                } else {
+                    this.style.overflowY = 'hidden';
+                }
+            });
+            
+            // Send message when user presses Enter (without Shift)
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Send message when user clicks send button
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Handle suggestion clicks
+            suggestions.forEach(suggestion => {
+                suggestion.addEventListener('click', function() {
+                    messageInput.value = this.textContent;
+                    sendMessage();
+                });
+            });
+            
+            // Function to send a message
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                
+                // Clear input and reset height
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // Show typing indicator
+                typingIndicator.style.display = 'block';
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // In a real application, this would be an API call to your Python backend
+                // Simulate API call with setTimeout
+                // Replace the setTimeout section with this:
+fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message: message }),
+})
+.then(response => response.json())
+.then(data => {
+    // Hide typing indicator
+    typingIndicator.style.display = 'none';
+    
+    // Add assistant message to chat
+    addMessage(data.response, 'assistant');
+})
+.catch(error => {
+    console.error('Error:', error);
+    typingIndicator.style.display = 'none';
+    addMessage("Sorry, I encountered an error. Please try again.", 'assistant');
+});
+            }
+            
+            // Function to add a message to the chat
+            function addMessage(text, sender) {
+                // Remove welcome message if it exists
+                const welcomeMessage = document.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+                
+                // Create message element
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(sender + '-message');
+                
+                // Add message text
+                messageElement.textContent = text;
+                
+                // Add timestamp
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('message-time');
+                const now = new Date();
+                timeElement.textContent = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+                messageElement.appendChild(timeElement);
+                
+                // Add message to container
+                messagesContainer.appendChild(messageElement);
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Function to get a response based on user input
+            // In a real application, this would be replaced with an API call to your Python backend
+            function getResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                // Check for keywords in the message
+                if (lowerMessage.includes('dog')) {
+                    return sampleResponses.dog;
+                } else if (lowerMessage.includes('cat')) {
+                    return sampleResponses.cat;
+                } else if (lowerMessage.includes('rabbit')) {
+                    return sampleResponses.rabbit;
+                } else if (lowerMessage.includes('bearded dragon') || lowerMessage.includes('bearded')) {
+                    return sampleResponses.bearded;
+                } else {
+                    return sampleResponses.default;
+                }
+            }
+            
+            // Focus on input field when page loads
+            messageInput.focus();
+        });
+    </script>
+</body>
+</html>
